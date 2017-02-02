@@ -10,8 +10,9 @@
  *      - demo-sanity-checks (robot integration sanity check battery)
  *      - demo-integration-tests (robot full integration battery)
  *
- *  TODO: 
+ *  Open Questions: 
  *      - review yum servers and when to copy/promote artifacts, I think we need one more yum repo (snapshot-> nightly -> staging -> release -> prod) view IMG_20170130_184943.jpg
+ *      - how many versions to store yum repos for each stage fo the pipeline?
 */
 
 
