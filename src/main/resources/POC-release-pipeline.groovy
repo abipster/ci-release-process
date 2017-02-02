@@ -16,10 +16,10 @@
         node {
             echo 'preparing nightly build'
             build 'demo-component'
-            /*
+            
             build 'demo-component-test'
             build 'demo-sanity-checks'
-            */
+            
             timeout(time:1, unit:'DAYS') {
                 /*
                 input id: 'nightlyStaging', message: 'Promote this build to staging?', parameters: [choice(choices: ['Yes\nNo'], description: '', name: 'promoteNightly')]
