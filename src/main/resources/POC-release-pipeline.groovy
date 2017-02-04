@@ -29,11 +29,16 @@ stage('nightly build') {
         build 'demo-component'
         /* TODO: perform release of package-control */ 
         /* TODO: build nightlies yum repo  */ 
-        
+    }
+
+    node{        
         /* TODO: create component test environment using vagrant  */ 
         build 'demo-component-test'
         /* TODO: destroy component test environment using vagrant  */ 
         
+    }
+
+    node{
         /* TODO: create sanity check test environment using vagrant  */ 
         build 'demo-sanity-checks'
         /* TODO: destroy sanity check test environment using vagrant  */   
@@ -45,8 +50,13 @@ stage('nightly build') {
      *      - promote anyway?
     */
     /* ask user if build should be promoted to staging */
-    timeout(time:2, unit:'MINUTES') {
-        promoteNightlyInput = input id: 'nightlyPromotion', message: 'Promote this build to Stable?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'Yes\nNo', description: '', name: 'promoteNightly']]
+    try{
+        timeout(time:1, unit:'MINUTES') {
+            promoteNightlyInput = input id: 'nightlyPromotion', message: 'Promote this build to Stable?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'Yes\nNo', description: '', name: 'promoteNightly']]
+        }
+    } catch (err) {
+        def user = err.getCauses()[0].getUser()
+        echo "Aborted by:\n ${user}"
     }
 }
 
