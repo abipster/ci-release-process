@@ -36,8 +36,7 @@ stage('nightly build') {
         
         /* TODO: create sanity check test environment using vagrant  */ 
         build 'demo-sanity-checks'
-        /* TODO: destroy sanity check test environment using vagrant  */ 
-        
+        /* TODO: destroy sanity check test environment using vagrant  */   
     }
 
     /** 
@@ -72,61 +71,64 @@ if(promoteNightlyInput == 'Yes'){
         timeout(time:5, unit:'MINUTES') {
             promoteStableInput = input id: 'stablePromotion', message: 'Promote this build to Staging?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'promoteStable']]
         }
-    
-        if(promoteNightlyInput == 'Yes'){
+    }
+
+    if(promoteStableInput == 'Yes'){
         echo '\u2705 Stable Build promoted by user choice'
 
-            stage('staging build') {
-                node {
-                    echo 'preparing staging build'
-                    
-                    /* TODO: create integration test environment using vagrant  */ 
-                    build 'demo-integration-tests'
-                    /* TODO: destroy integration test environment using vagrant  */ 
-
-                    /* TODO: create manual test staging environment using vagrant  */ 
-                }
-
-                /** 
-                 * TODO: What to do if user does not give input (after 5 day timout)?
-                 *      - discard build?
-                 *      - promote anyway?
-                */
-                /* ask user if build should be promoted to release */
-                timeout(time:10, unit:'MINUTES') {
-                    promoteStagingInput = input id: 'stagingPromotion', message: 'Promote this build to Release?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'promoteStaging']]
-                }
+        milestone()
+        stage('staging build') {
+            node {
+                echo 'preparing staging build'
                 
-                /* TODO: destroy manual test staging environment using vagrant  */
+                /* TODO: create integration test environment using vagrant  */ 
+                build 'demo-integration-tests'
+                /* TODO: destroy integration test environment using vagrant  */ 
+
+                /* TODO: create manual test staging environment using vagrant  */ 
             }
 
-            if(promoteStagingInput == 'Yes'){
-                echo '\u2705 Staging Build promoted by user choice'
+            /** 
+             * TODO: What to do if user does not give input (after 5 day timout)?
+             *      - discard build?
+             *      - promote anyway?
+            */
+            /* ask user if build should be promoted to release */
+            timeout(time:10, unit:'MINUTES') {
+                promoteStagingInput = input id: 'stagingPromotion', message: 'Promote this build to Release?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'promoteStaging']]
+            }
             
-                milestone()            
-                stage('release build') {
-                    node {
-                        echo 'preparing release build'
+            /* TODO: destroy manual test staging environment using vagrant  */
+        }
 
-                        /* TODO: create manual test release environment using vagrant  */ 
-                    }
+        if(promoteStagingInput == 'Yes'){
+            echo '\u2705 Staging Build promoted by user choice'
+            
+            milestone()            
+            stage('release build') {
+                node {
+                    echo 'preparing release build'
 
-                    /* ask user if build should be released */
-                    timeout(time:15, unit:'MINUTES') {
-                        releaseVersionInput = input id: 'releasePromotion', message: 'Release this build?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'releaseVersion']]
-
-                        if(releaseVersionInput == 'Yes'){
-                            /* TODO: Rename package-control to lose the 'RC' part of the name and release it again */
-                            /* TODO: copy/promote the staging yum repo to the yum release repo after the new release */ 
-                            echo '\u2705 Version released by user choice'
-                        }else{
-                            /* TODO: do nothing */
-                            error '\u2717 Version discarded by user choice'
-                        }
-                    }
-                    /* TODO: destroy manual test release environment using vagrant  */ 
+                    /* TODO: create manual test release environment using vagrant  */ 
                 }
             }
+
+            /* ask user if build should be released */
+            timeout(time:15, unit:'MINUTES') {
+                releaseVersionInput = input id: 'releasePromotion', message: 'Release this build?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'releaseVersion']]
+
+                if(releaseVersionInput == 'Yes'){
+                    /* TODO: Rename package-control to lose the 'RC' part of the name and release it again */
+                    /* TODO: copy/promote the staging yum repo to the yum release repo after the new release */ 
+                    echo '\u2705 Version released by user choice'
+                }else{
+                    /* TODO: do nothing */
+                    error '\u2717 Version discarded by user choice'
+                }
+            }
+            /* TODO: destroy manual test release environment using vagrant  */ 
+        }else{
+            error '\u2717 Stable Build discarded by user choice'
         }
     }else{
         error '\u2717 Staging Build discarded by user choice'
