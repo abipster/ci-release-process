@@ -26,7 +26,8 @@ stage('nightly build') {
 
     parallel nightlyBuildInParallel()
 
-    parallel nightlyTestsInParallel()
+    /* TODO not working yet */
+    /* parallel nightlyTestsInParallel() */
 
     
     node{
