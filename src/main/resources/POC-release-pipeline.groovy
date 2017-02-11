@@ -23,19 +23,27 @@ def releaseVersionInput = "No"
 
 milestone()
 stage('nightly build') {
-    node {
-        echo 'preparing nightly build'
+    echo 'preparing nightly build'
 
-        build 'demo-component'
-        /* TODO: perform release of package-control */ 
-        /* TODO: build nightlies yum repo  */ 
-    }
+    parallel dcLogic: {
+        node {
+            echo "Build DCLogic"            
+            build 'demo-component'
+            /* TODO: perform release of package-control */ 
+            /* TODO: build nightlies yum repo  */ 
+        }
+    }, sitecontroller: {
+        echo "Build Sitecontroller"
+    }, operatorUI: {
+        echo "Build Operator UI"
+    }, ums:{
+        echo "Build UMS"
+    }, failFast: false
 
     node{        
         /* TODO: create component test environment using vagrant  */ 
         build 'demo-component-test'
         /* TODO: destroy component test environment using vagrant  */ 
-        
     }
 
     node{
@@ -53,15 +61,15 @@ stage('nightly build') {
     try{
         timeout(time:1, unit:'MINUTES') {
             promoteNightlyInput = input id: 'nightlyPromotion', message: 'Promote this build to Stable?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'Yes\nNo', description: '', name: 'promoteNightly']]
+            echo '\u2705 Nightly Build promoted by user choice'
         }
     } catch (err) {
         def user = err.getCauses()[0].getUser()
-        echo "Aborted by:\n ${user}"
+        echo '\u2705 Nightly Build promoted by ${user}'
     }
 }
 
 if(promoteNightlyInput == 'Yes'){
-    echo '\u2705 Nightly Build promoted by user choice'
             
     milestone()
     
@@ -77,15 +85,20 @@ if(promoteNightlyInput == 'Yes'){
          *      - discard build?
          *      - promote anyway?
         */
-        /* ask user if build should be promoted to release */
-        timeout(time:5, unit:'MINUTES') {
-            promoteStableInput = input id: 'stablePromotion', message: 'Promote this build to Staging?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'promoteStable']]
+        /* ask user if build should be promoted to staging */
+        try{
+            timeout(time:5, unit:'MINUTES') {
+                promoteStableInput = input id: 'stablePromotion', message: 'Promote this build to Staging?', ok: 'Submit', parameters: [[$class: 'ChoiceParameterDefinition', choices: 'No\nYes', description: '', name: 'promoteStable']]
+                echo '\u2705 Stable Build promoted by user choice'
+            }
+        } catch (err) {
+            def user = err.getCauses()[0].getUser()
+            echo '\u2705 Nightly Build promoted by ${user}'
         }
     }
 
     if(promoteStableInput == 'Yes'){
-        echo '\u2705 Stable Build promoted by user choice'
-
+        
         milestone()
         stage('staging build') {
             node {
@@ -146,6 +159,18 @@ if(promoteNightlyInput == 'Yes'){
 }else{
     error '\u2717 Nightly Build discarded by user choice'
 }
+
+/**
+ * EXTRA CONFIGURATIONS
+ *
+ * Approve the following configurations in "Manage Jenkins > In-process Script Approval" 
+ *
+ *  - method org.jenkinsci.plugins.workflow.steps.FlowInterruptedException getCauses
+ *  - method org.jenkinsci.plugins.workflow.support.steps.input.Rejection getUser
+ *  - new hudson.model.ChoiceParameterDefinition java.lang.String java.lang.String[] java.lang.String
+ *
+*/
+
 
 /**
  * this is a comment
