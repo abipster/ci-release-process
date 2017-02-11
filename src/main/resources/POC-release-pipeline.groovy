@@ -144,7 +144,7 @@ if(promoteNightlyInput == 'Yes'){
 }
 
 
-def nightlyBuildInParallel() {
+Map nightlyBuildInParallel() {
     def branches = [:]
 
     branches["datacentre"] = {
@@ -172,9 +172,11 @@ def nightlyBuildInParallel() {
         }
     }
     branches["failFast"] = false
+
+    return branches
 }
 
-def nightlyTestsInParallel() {
+Map nightlyTestsInParallel() {
     def branches = [:]
 
     branches["robot-dcLogic"] = {
@@ -210,6 +212,8 @@ def nightlyTestsInParallel() {
         }
     }
     branches["failFast"] = false
+
+    return branches
 }
 
 /**
