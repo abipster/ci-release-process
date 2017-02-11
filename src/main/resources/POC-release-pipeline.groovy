@@ -11,8 +11,7 @@
  *      - demo-integration-tests (robot full integration battery)
  *
  *  Open Questions: 
- *      - review yum servers and when to copy/promote artifacts, I think we need one more yum repo (snapshot-> nightly -> staging -> release -> prod) view IMG_20170130_184943.jpg
- *      - how many versions to store yum repos for each stage fo the pipeline?
+ *      - 
 */
 
 
@@ -25,27 +24,11 @@ milestone()
 stage('nightly build') {
     echo 'preparing nightly build'
 
-    parallel dcLogic: {
-        node {
-            echo "Build DCLogic"            
-            build 'demo-component'
-            /* TODO: perform release of package-control */ 
-            /* TODO: build nightlies yum repo  */ 
-        }
-    }, sitecontroller: {
-        echo "Build Sitecontroller"
-    }, operatorUI: {
-        echo "Build Operator UI"
-    }, ums:{
-        echo "Build UMS"
-    }, failFast: false
+    parallel nightlyBuildInParallel()
 
-    node{        
-        /* TODO: create component test environment using vagrant  */ 
-        build 'demo-component-test'
-        /* TODO: destroy component test environment using vagrant  */ 
-    }
+    parallel nightlyTestsInParallel()
 
+    
     node{
         /* TODO: create sanity check test environment using vagrant  */ 
         build 'demo-sanity-checks'
@@ -158,6 +141,75 @@ if(promoteNightlyInput == 'Yes'){
     }
 }else{
     error '\u2717 Nightly Build discarded by user choice'
+}
+
+
+def nightlyBuildInParallel() {
+    def branches = [:]
+
+    branches["datacentre"] = {
+        node {
+            echo "Build DCLogic"            
+            build 'demo-component'
+            
+            /* TODO: perform release of package-control */ 
+            echo "Release Datacentre nightly build to artifactory"
+
+            /* TODO: build nightlies yum repo  */ 
+            echo "Add Datacentre nightly to yum repo"
+        }
+    }
+    branches["site"] = {
+        node {
+            echo "Build Site"
+            build 'demo-component'
+
+            /* TODO: perform release of package-control */ 
+            echo "Release Site nightly build to artifactory"
+            
+            /* TODO: build nightlies yum repo  */ 
+            echo "Add Site nightly to yum repo"
+        }
+    }
+    branches["failFast"] = false
+}
+
+def nightlyTestsInParallel() {
+    def branches = [:]
+
+    branches["robot-dcLogic"] = {
+        node{        
+            echo "Component test: DCLogic"            
+            /* TODO: create component test environment using vagrant  */ 
+            build 'demo-component-test'
+            /* TODO: destroy component test environment using vagrant  */ 
+        }
+    }
+    branches["robot-operatorUI"] = {
+        node{        
+            echo "Component test: operatorUI"            
+            /* TODO: create component test environment using vagrant  */ 
+            build 'demo-component-test'
+            /* TODO: destroy component test environment using vagrant  */ 
+        }
+    }
+    branches["robot-ums"] = {
+        node{        
+            echo "Component test: ums"            
+            /* TODO: create component test environment using vagrant  */ 
+            build 'demo-component-test'
+            /* TODO: destroy component test environment using vagrant  */ 
+        }
+    }
+    branches["robot-sitecontroller"] = {
+        node{        
+            echo "Component test: sitecontroller"            
+            /* TODO: create component test environment using vagrant  */ 
+            build 'demo-component-test'
+            /* TODO: destroy component test environment using vagrant  */ 
+        }
+    }
+    branches["failFast"] = false
 }
 
 /**
