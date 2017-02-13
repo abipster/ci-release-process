@@ -24,14 +24,13 @@ milestone()
 stage('nightly') {
     echo 'preparing nightly build'
 
-    stage('nightly build'){
+    stage('nightly release'){
         parallel nightlyBuildInParallel()
     }
 
     stage('nightly test'){
         // TODO not working yet
         parallel nightlyTestsInParallel()
-
         
         node{
             // TODO: create sanity check test environment using vagrant
@@ -162,7 +161,7 @@ Map nightlyBuildInParallel() {
             echo "Add Datacentre nightly to yum repo"
         }
     }
-    /*
+
     branches["site"] = {
         node {
             echo "Build Site"
@@ -175,7 +174,7 @@ Map nightlyBuildInParallel() {
             echo "Add Site nightly to yum repo"
         }
     }
-    */
+
 
     return branches
 }
@@ -200,7 +199,7 @@ Map nightlyTestsInParallel() {
             // TODO: destroy component test environment using vagrant
         }
     }
-    /*
+    
     branches["robot-ums"] = {
         node{        
             echo "Component test: ums"            
@@ -209,6 +208,7 @@ Map nightlyTestsInParallel() {
             // TODO: destroy component test environment using vagrant
         }
     }
+    /*
     branches["robot-sitecontroller"] = {
         node{        
             echo "Component test: sitecontroller"            
