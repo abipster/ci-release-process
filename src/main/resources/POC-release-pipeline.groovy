@@ -21,19 +21,23 @@ def promoteStagingInput = "No"
 def releaseVersionInput = "No"
 
 milestone()
-stage('nightly build') {
+stage('nightly') {
     echo 'preparing nightly build'
 
-    parallel nightlyBuildInParallel()
+    stage('nightly build'){
+        parallel nightlyBuildInParallel()
+    }
 
-    // TODO not working yet
-    parallel nightlyTestsInParallel()
+    stage('nightly test'){
+        // TODO not working yet
+        parallel nightlyTestsInParallel()
 
-    
-    node{
-        // TODO: create sanity check test environment using vagrant
-        build 'demo-sanity-checks'
-        // TODO: destroy sanity check test environment using vagrant
+        
+        node{
+            // TODO: create sanity check test environment using vagrant
+            build 'demo-sanity-checks'
+            // TODO: destroy sanity check test environment using vagrant
+        }
     }
 
     /** 
@@ -56,7 +60,7 @@ if(promoteNightlyInput == 'Yes'){
     echo '\u2705 Nightly Build promoted by user choice'
     milestone()
     
-    stage('stable build') {
+    stage('stable') {
         node{
             echo 'preparing stable build'
             
@@ -82,7 +86,7 @@ if(promoteNightlyInput == 'Yes'){
     if(promoteStableInput == 'Yes'){
         echo '\u2705 Stable Build promoted by user choice'
         milestone()
-        stage('staging build') {
+        stage('staging') {
             node {
                 echo 'preparing staging build'
                 
@@ -110,7 +114,7 @@ if(promoteNightlyInput == 'Yes'){
             echo '\u2705 Staging Build promoted by user choice'
             
             milestone()            
-            stage('release build') {
+            stage('release') {
                 node {
                     echo 'preparing release build'
 
