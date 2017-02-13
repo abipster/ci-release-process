@@ -24,10 +24,10 @@ milestone()
 stage('nightly build') {
     echo 'preparing nightly build'
 
-    parallel nightlyBuildInParallel(), failFast: false
+    parallel nightlyBuildInParallel()
 
     // TODO not working yet
-    parallel nightlyTestsInParallel(), failFast: false
+    parallel nightlyTestsInParallel()
 
     
     node{
