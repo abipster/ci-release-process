@@ -33,4 +33,3 @@ Feel free to help developing this and to share it with anyone else. I'm here to 
 
 Regards,
 
-Diogo
